@@ -32,38 +32,41 @@ class LoadUI:
         self.correct_button = QPushButton('Correct', self.parent)
         self.correct_button.clicked.connect(self.handle_correct)
         # Vertical layout for Single and Double buttons
-        single_double_frame = QVBoxLayout()
-        single_double_frame.addWidget(self.correct_button)
+        correct_frame = QVBoxLayout()
+        wrong_frame = QVBoxLayout()
+        correct_frame.addWidget(self.correct_button)
         
         self.single_button = QPushButton('Single', self.parent)  # Correctly define single_button here
         self.single_button.clicked.connect(self.handle_correct_single)
-        single_double_frame.addWidget(self.single_button)
+        correct_frame.addWidget(self.single_button)
 
         self.double_button = QPushButton('Double', self.parent)
         self.double_button.clicked.connect(self.handle_correct_double)
-        single_double_frame.addWidget(self.double_button)
+        correct_frame.addWidget(self.double_button)
 
-        self.button_frame.addLayout(single_double_frame)  # Add vertical layout to horizontal layout
+        self.button_frame.addLayout(correct_frame)  # Add vertical layout to horizontal layout
 
         self.incorrect_blurred_button = QPushButton('imageblur', self.parent)
         self.incorrect_blurred_button.clicked.connect(self.handle_blur)
         self.button_frame.addWidget(self.incorrect_blurred_button)
         
-        self.ignore_button = QPushButton('ignore', self.parent)
-        self.ignore_button.clicked.connect(lambda: self.parent.rename_and_move_image('ignore'))
-        self.button_frame.addWidget(self.ignore_button)
+        self.incorrect_others_button = QPushButton('Wrong', self.parent)
+        self.incorrect_others_button.clicked.connect(lambda: self.parent.rename_and_move_image('Wrong'))
+        wrong_frame.addWidget(self.incorrect_others_button)
+        
+        self.ignore_button = QPushButton('Single', self.parent)
+        self.ignore_button.clicked.connect(lambda: self.parent.rename_and_move_image('Single'))
+        wrong_frame.addWidget(self.ignore_button)
 
-        self.incorrect_missing_object_button = QPushButton('doubleline', self.parent)
-        self.incorrect_missing_object_button.clicked.connect(lambda: self.parent.rename_and_move_image('doubleline'))
-        self.button_frame.addWidget(self.incorrect_missing_object_button)
+        self.incorrect_missing_object_button = QPushButton('Double', self.parent)
+        self.incorrect_missing_object_button.clicked.connect(lambda: self.parent.rename_and_move_image('Double'))
+        wrong_frame.addWidget(self.incorrect_missing_object_button)
+        
+        self.button_frame.addLayout(wrong_frame)
         
         self.incorrect_keypoint_error_button = QPushButton('keypointerror', self.parent)
         self.incorrect_keypoint_error_button.clicked.connect(self.handle_keypoint_error)  # Update the connection
         self.button_frame.addWidget(self.incorrect_keypoint_error_button)
-        
-        self.incorrect_others_button = QPushButton('others', self.parent)
-        self.incorrect_others_button.clicked.connect(lambda: self.parent.rename_and_move_image('others'))
-        self.button_frame.addWidget(self.incorrect_others_button)
 
         self.image_label = QLabel(self.parent)
         self.image_label.setAlignment(Qt.AlignCenter)
