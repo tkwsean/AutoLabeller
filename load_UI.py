@@ -109,6 +109,7 @@ class LoadUI:
         QShortcut(QKeySequence('8'), self.parent).activated.connect(lambda: self.parent.rename_and_move_image('ignore'))
         QShortcut(QKeySequence('9'), self.parent).activated.connect(lambda: self.parent.rename_and_move_image('doubleline'))
         QShortcut(QKeySequence('0'), self.parent).activated.connect(lambda: self.parent.rename_and_move_image('others'))
+
     def rename_and_move_image(self, category):
         dialog = RenameDialog(self.parent)
         if dialog.exec_() == QDialog.Accepted:
@@ -118,16 +119,16 @@ class LoadUI:
 
     def handle_keypoint_error(self):
         # Directly move to the keypointerror folder without prompt
-        self.parent.loader.move_image('keypointerror', None)
+        self.parent.loader.move_image_without_creating_folders('keypointerror', None)
     
     def handle_correct(self):
-        self.parent.loader.move_image('correct', None)
+        self.parent.loader.move_image_without_creating_folders('correct', None)
         
     def handle_correct_single(self):
-        self.parent.loader.move_image('correct/single', None)
+        self.parent.loader.move_image_without_creating_folders('correct/single', None)
     
     def handle_correct_double(self):
-        self.parent.loader.move_image('correct/double', None)
+        self.parent.loader.move_image_without_creating_folders('correct/double', None)
         
     def handle_blur(self):
         self.parent.loader.move_image('imageblur', None)
