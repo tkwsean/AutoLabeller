@@ -4,7 +4,7 @@ import numpy as np
 from PyQt5.QtGui import QImage, QPixmap
 
 class MagnifyingGlass:
-    def __init__(self, loader, magnifying_glass_size=100, magnifying_glass_zoom=2):
+    def __init__(self, loader, magnifying_glass_size=500, magnifying_glass_zoom=3):
         self.loader = loader
         self.magnifying_glass_size = magnifying_glass_size
         self.magnifying_glass_zoom = magnifying_glass_zoom
