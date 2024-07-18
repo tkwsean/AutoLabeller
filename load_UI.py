@@ -55,11 +55,11 @@ class LoadUI:
         wrong_frame.addWidget(self.incorrect_others_button)
         
         self.ignore_button = QPushButton('Single', self.parent)
-        self.ignore_button.clicked.connect(self.handle_correct_single)
+        self.ignore_button.clicked.connect(self.handle_wrong_single)
         wrong_frame.addWidget(self.ignore_button)
 
         self.incorrect_missing_object_button = QPushButton('Double', self.parent)
-        self.incorrect_missing_object_button.clicked.connect(self.handle_correct_double)
+        self.incorrect_missing_object_button.clicked.connect(self.handle_wrong_double)
         wrong_frame.addWidget(self.incorrect_missing_object_button)
         
         self.button_frame.addLayout(wrong_frame)
@@ -89,7 +89,7 @@ class LoadUI:
         self.assign_methods_to_parent()
 
         self.update_counts()
-        self.initShortcuts()
+        # self.initShortcuts()
         self.parent.setMouseTracking(True)
         self.image_label.setMouseTracking(True)
         self.image_label.mouseMoveEvent = self.magnifier.mouseMoveEvent
@@ -103,15 +103,15 @@ class LoadUI:
     def update_counts(self):
         self.loader.update_counts()
 
-    def initShortcuts(self):
-        QShortcut(QKeySequence('1'), self.parent).activated.connect(self.handle_correct)
-        QShortcut(QKeySequence('2'), self.parent).activated.connect(self.handle_correct_single)
-        QShortcut(QKeySequence('3'), self.parent).activated.connect(self.handle_correct_double)
-        QShortcut(QKeySequence('6'), self.parent).activated.connect(self.handle_blur)
-        QShortcut(QKeySequence('7'), self.parent).activated.connect(self.handle_keypoint_error)  # Update the connection
-        QShortcut(QKeySequence('8'), self.parent).activated.connect(lambda: self.parent.rename_and_move_image('ignore'))
-        QShortcut(QKeySequence('9'), self.parent).activated.connect(lambda: self.parent.rename_and_move_image('doubleline'))
-        QShortcut(QKeySequence('0'), self.parent).activated.connect(lambda: self.parent.rename_and_move_image('others'))
+    # def initShortcuts(self):
+    #     QShortcut(QKeySequence('1'), self.parent).activated.connect(self.handle_correct)
+    #     QShortcut(QKeySequence('2'), self.parent).activated.connect(self.handle_correct_single)
+    #     QShortcut(QKeySequence('3'), self.parent).activated.connect(self.handle_correct_double)
+    #     QShortcut(QKeySequence('6'), self.parent).activated.connect(self.handle_blur)
+    #     QShortcut(QKeySequence('7'), self.parent).activated.connect(self.handle_keypoint_error)  # Update the connection
+    #     QShortcut(QKeySequence('8'), self.parent).activated.connect(lambda: self.parent.rename_and_move_image('ignore'))
+    #     QShortcut(QKeySequence('9'), self.parent).activated.connect(lambda: self.parent.rename_and_move_image('doubleline'))
+    #     QShortcut(QKeySequence('0'), self.parent).activated.connect(lambda: self.parent.rename_and_move_image('others'))
 
     def rename_and_move_image(self, category):
         dialog = RenameDialog(self.parent)
@@ -122,7 +122,7 @@ class LoadUI:
 
     def handle_keypoint_error(self):
         # Directly move to the keypointerror folder without prompt
-        self.parent.loader.move_image_without_creating_folders('keypointerror', None)
+        self.parent.loader.move_image('keypointerror', None)
     
     def handle_correct(self):
         self.parent.loader.move_image_without_creating_folders('correct', None)
