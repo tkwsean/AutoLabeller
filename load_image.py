@@ -119,8 +119,25 @@ class LoadImage:
             os.remove(self.current_image_path_2)  # Delete the debug image  
         self.completed_count += 1
         self.load_next_image_pair()
+    
+    def move_image_without_creating_folders_both(self, category, new_name):
+        dest_dir = os.path.join(self.image_files, category)  # Parent directory where 'normal' would be
+        if not os.path.exists(dest_dir):
+            os.makedirs(dest_dir)  # Ensure the directory exists
 
+        # Generate unique paths for both images
+        normal_new_path_1 = os.path.join(dest_dir, (new_name + '.jpg') if new_name else os.path.basename(self.current_image_path_1))
+        normal_new_path_2 = os.path.join(dest_dir, (new_name + '_debug.jpg') if new_name else os.path.basename(self.current_image_path_2))
 
+        # Move both images
+        shutil.move(self.current_image_path_1, normal_new_path_1)
+        if os.path.exists(self.current_image_path_2):  # Check if the debug image exists
+            shutil.move(self.current_image_path_2, normal_new_path_2)
+        
+        self.completed_count += 1
+        self.load_next_image_pair()
+
+        
     def update_counts(self):
         remaining_count = len(self.image_pairs) - self.current_pair_index
         self.remaining_label.setText(f'Remaining: {remaining_count}')

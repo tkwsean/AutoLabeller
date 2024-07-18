@@ -122,7 +122,7 @@ class LoadUI:
 
     def handle_keypoint_error(self):
         # Directly move to the keypointerror folder without prompt
-        self.parent.loader.move_image('keypointerror', None)
+        self.parent.loader.move_image_without_creating_folders_both('keypointerror', None)
     
     def handle_correct(self):
         self.parent.loader.move_image_without_creating_folders('correct', None)
