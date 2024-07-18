@@ -51,15 +51,15 @@ class LoadUI:
         self.button_frame.addWidget(self.incorrect_blurred_button)
         
         self.incorrect_others_button = QPushButton('Wrong', self.parent)
-        self.incorrect_others_button.clicked.connect(lambda: self.parent.rename_and_move_image('Wrong'))
+        self.incorrect_others_button.clicked.connect(self.handle_wrong)
         wrong_frame.addWidget(self.incorrect_others_button)
         
         self.ignore_button = QPushButton('Single', self.parent)
-        self.ignore_button.clicked.connect(lambda: self.parent.rename_and_move_image('Single'))
+        self.ignore_button.clicked.connect(self.handle_correct_single)
         wrong_frame.addWidget(self.ignore_button)
 
         self.incorrect_missing_object_button = QPushButton('Double', self.parent)
-        self.incorrect_missing_object_button.clicked.connect(lambda: self.parent.rename_and_move_image('Double'))
+        self.incorrect_missing_object_button.clicked.connect(self.handle_correct_double)
         wrong_frame.addWidget(self.incorrect_missing_object_button)
         
         self.button_frame.addLayout(wrong_frame)
@@ -134,6 +134,16 @@ class LoadUI:
         self.parent.loader.move_image_without_creating_folders('correct/double', None)
         
     def handle_blur(self):
-        self.parent.loader.move_image('imageblur', None)
+        self.parent.loader.move_image_without_creating_folders('imageblur', None)
+    
+    def handle_wrong(self):
+        self.parent.loader.move_image_without_creating_folders('wrong', None)
+        
+    def handle_wrong_single(self):
+        self.parent.loader.move_image_without_creating_folders('wrong/single', None)
+    
+    def handle_wrong_double(self):
+        self.parent.loader.move_image_without_creating_folders('wrong/double', None)
+        
 
 
