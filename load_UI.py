@@ -25,7 +25,7 @@ class LoadUI:
 
         self.button_frame = QHBoxLayout()  # Use QHBoxLayout to stack buttons horizontally
 
-        self.next_button = QPushButton('Next Image Pair', self.parent)
+        self.next_button = QPushButton('Load Image Pair', self.parent)
         self.next_button.clicked.connect(self.parent.load_next_image_pair)
         self.button_frame.addWidget(self.next_button)
 
