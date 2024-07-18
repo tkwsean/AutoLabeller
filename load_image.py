@@ -58,7 +58,7 @@ class LoadImage:
             print(f"Resized second image to shape: {image_2.shape}")
             
             # Combine images side by side
-            combined_image = np.hstack((image_1, image_2))
+            combined_image = np.hstack((image_2,image_1))
             print(f"Combined image shape: {combined_image.shape}")
 
             # Resize combined image to fit within 1920x1080 while maintaining aspect ratio
