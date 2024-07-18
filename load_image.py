@@ -19,6 +19,7 @@ class LoadImage:
         self.current_image_path_2 = None
         self.completed_count = 0
         self.create_combined_image = None
+        self.prev_combined_image = None
 
     def find_image_pairs(self):
         files = os.listdir(self.image_files)
@@ -58,7 +59,7 @@ class LoadImage:
             print(f"Resized second image to shape: {image_2.shape}")
             
             # Combine images side by side
-            combined_image = np.hstack((image_2,image_1))
+            combined_image = np.hstack((image_2, image_1))
             print(f"Combined image shape: {combined_image.shape}")
 
             # Resize combined image to fit within 1920x1080 while maintaining aspect ratio
@@ -69,8 +70,18 @@ class LoadImage:
                 scaling_factor = min(max_width / w, max_height / h)
                 new_size = (int(w * scaling_factor), int(h * scaling_factor))
                 combined_image = cv2.resize(combined_image, new_size)
-                self.create_combined_image = combined_image
                 print(f"Resized combined image to: {combined_image.shape}")
+
+            # Combine current image with previous combined image, if it exists
+            if self.prev_combined_image is not None:
+                # Resize current combined image to match the previous combined image width
+                prev_h, prev_w, _ = self.prev_combined_image.shape
+                if prev_w != combined_image.shape[1]:
+                    combined_image = cv2.resize(combined_image, (prev_w, combined_image.shape[0]))
+                combined_image = np.vstack((combined_image, self.prev_combined_image))
+                print(f"Stacked previous image, new combined image shape: {combined_image.shape}")
+
+            self.create_combined_image = combined_image.copy()  # Ensure it's copied to avoid reference issues
 
             height, width, channel = combined_image.shape
             bytesPerLine = 3 * width
@@ -81,7 +92,10 @@ class LoadImage:
         
             # Update label to show current image name
             self.label.setText(os.path.basename(self.current_image_path_1))
-        
+            
+            # Store the current combined image as the previous one for the next iteration
+            self.prev_combined_image = self.create_combined_image
+
             self.current_pair_index += 1
             if self.magnifier:
                 self.magnifier.update_image_display()
@@ -107,7 +121,7 @@ class LoadImage:
             
             self.completed_count += 1
             self.load_next_image_pair()
-    
+
     def move_image_without_creating_folders(self, category, new_name):
         dest_dir = os.path.join(self.image_files, category)  # Parent directory where 'normal' would be
         if not os.path.exists(dest_dir):
@@ -119,7 +133,7 @@ class LoadImage:
             os.remove(self.current_image_path_2)  # Delete the debug image  
         self.completed_count += 1
         self.load_next_image_pair()
-    
+
     def move_image_without_creating_folders_both(self, category, new_name):
         dest_dir = os.path.join(self.image_files, category)  # Parent directory where 'normal' would be
         if not os.path.exists(dest_dir):
@@ -137,7 +151,6 @@ class LoadImage:
         self.completed_count += 1
         self.load_next_image_pair()
 
-        
     def update_counts(self):
         remaining_count = len(self.image_pairs) - self.current_pair_index
         self.remaining_label.setText(f'Remaining: {remaining_count}')
