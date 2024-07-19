@@ -10,6 +10,7 @@ from renameDialogue import RenameDialog  # Import the RenameDialog class
 class LoadUI:
     def __init__(self, parent):
         self.parent = parent
+        self.prev_button_pressed = []
 
     def initUI(self):
         self.parent.setWindowTitle('Image Inspector')
@@ -50,10 +51,6 @@ class LoadUI:
         self.incorrect_blurred_button.clicked.connect(self.handle_blur)
         self.button_frame.addWidget(self.incorrect_blurred_button)
         
-        # self.incorrect_others_button = QPushButton('Wrong', self.parent)
-        # self.incorrect_others_button.clicked.connect(self.handle_wrong)
-        # wrong_frame.addWidget(self.incorrect_others_button)
-        
         self.ignore_button = QPushButton('Wrong Single', self.parent)
         self.ignore_button.clicked.connect(self.handle_wrong_single)
         wrong_frame.addWidget(self.ignore_button)
@@ -67,6 +64,10 @@ class LoadUI:
         self.incorrect_keypoint_error_button = QPushButton('keypointerror', self.parent)
         self.incorrect_keypoint_error_button.clicked.connect(self.handle_keypoint_error)  # Update the connection
         self.button_frame.addWidget(self.incorrect_keypoint_error_button)
+        
+        self.undo_button = QPushButton('Undo', self.parent)
+        self.undo_button.clicked.connect(self.handle_undo)
+        self.button_frame.addWidget(self.undo_button)
 
         self.image_label = QLabel(self.parent)
         self.image_label.setAlignment(Qt.AlignCenter)
@@ -122,28 +123,44 @@ class LoadUI:
 
     def handle_keypoint_error(self):
         # Directly move to the keypointerror folder without prompt
+        self.prev_button_pressed.append('keypointerror')
         self.parent.loader.move_image_without_creating_folders_both('keypointerror', None)
     
-    def handle_correct(self):
-        self.parent.loader.move_image_without_creating_folders('correct', None)
         
     def handle_correct_single(self):
+        self.prev_button_pressed.append('correct/single')
         self.parent.loader.move_image_without_creating_folders('correct/single', None)
     
     def handle_correct_double(self):
+        self.prev_button_pressed.append('correct/double')
         self.parent.loader.move_image_without_creating_folders('correct/double', None)
         
     def handle_blur(self):
+        self.prev_button_pressed.append('imageblur')
         self.parent.loader.move_image_without_creating_folders('imageblur', None)
     
-    def handle_wrong(self):
-        self.parent.loader.move_image_without_creating_folders('wrong', None)
-        
     def handle_wrong_single(self):
+        self.prev_button_pressed.append('wrong/single')
         self.parent.rename_and_move_image('wrong/single')
     
     def handle_wrong_double(self):
+        self.prev_button_pressed.append('wrong/double')
         self.parent.rename_and_move_image('wrong/double')
-        
-
+    
+    def handle_undo(self):
+        if self.prev_button_pressed:
+            last_action = self.prev_button_pressed.pop()
+            print(last_action)
+            if last_action == 'keypointerror':
+                return None
+            elif last_action == 'correct/single':
+                return None
+            elif last_action == 'correct/double':
+                return None
+            elif last_action == 'imageblur':
+                return None
+            elif last_action == 'wrong/single':
+                return None
+            elif last_action == 'wrong/double':
+                return None
 

@@ -55,12 +55,9 @@ class LoadImage:
             height = max(image_1.shape[0], image_2.shape[0])
             image_1 = cv2.resize(image_1, (int(image_1.shape[1] * height / image_1.shape[0]), height))
             image_2 = cv2.resize(image_2, (int(image_2.shape[1] * height / image_2.shape[0]), height))
-            print(f"Resized first image to shape: {image_1.shape}")
-            print(f"Resized second image to shape: {image_2.shape}")
             
             # Combine images side by side
             combined_image = np.hstack((image_2, image_1))
-            print(f"Combined image shape: {combined_image.shape}")
 
             # Resize combined image to fit within 1920x1080 while maintaining aspect ratio
             max_height = 1080
@@ -70,16 +67,14 @@ class LoadImage:
                 scaling_factor = min(max_width / w, max_height / h)
                 new_size = (int(w * scaling_factor), int(h * scaling_factor))
                 combined_image = cv2.resize(combined_image, new_size)
-                print(f"Resized combined image to: {combined_image.shape}")
 
             # Combine current image with previous combined image, if it exists
-            if self.prev_combined_image is not None:
-                # Resize current combined image to match the previous combined image width
-                prev_h, prev_w, _ = self.prev_combined_image.shape
-                if prev_w != combined_image.shape[1]:
-                    combined_image = cv2.resize(combined_image, (prev_w, combined_image.shape[0]))
-                combined_image = np.vstack((combined_image, self.prev_combined_image))
-                print(f"Stacked previous image, new combined image shape: {combined_image.shape}")
+            # if self.prev_combined_image is not None:
+            #     # Resize current combined image to match the previous combined image width
+            #     prev_h, prev_w, _ = self.prev_combined_image.shape
+            #     if prev_w != combined_image.shape[1]:
+            #         combined_image = cv2.resize(combined_image, (prev_w, combined_image.shape[0]))
+            #     combined_image = np.vstack((combined_image, self.prev_combined_image))
 
             self.create_combined_image = combined_image.copy()  # Ensure it's copied to avoid reference issues
 
@@ -88,7 +83,6 @@ class LoadImage:
             qImg = QImage(combined_image.data, width, height, bytesPerLine, QImage.Format_RGB888)
             
             self.image_label.setPixmap(QPixmap.fromImage(qImg))
-            print("Combined image displayed.")
         
             # Update label to show current image name
             self.label.setText(os.path.basename(self.current_image_path_1))
