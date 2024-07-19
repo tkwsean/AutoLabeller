@@ -104,6 +104,9 @@ class LoadImage:
             self.label.setText("No More Images")
 
     def move_image(self, category, new_name):
+        '''
+        Move image pairs into normal and debug respectively
+        '''
         if self.current_image_path_1:
             dest_dir_normal = os.path.join(self.image_files, category, "normal")
             dest_dir_debug = os.path.join(self.image_files, category, "debug")
@@ -123,6 +126,10 @@ class LoadImage:
             self.load_next_image_pair()
 
     def move_image_without_creating_folders(self, category, new_name):
+        '''
+        Moves correct images without creating folders
+        Deletes the wrong images
+        '''
         dest_dir = os.path.join(self.image_files, category)  # Parent directory where 'normal' would be
         if not os.path.exists(dest_dir):
             os.makedirs(dest_dir)  # Ensure the directory exists
@@ -135,6 +142,9 @@ class LoadImage:
         self.load_next_image_pair()
 
     def move_image_without_creating_folders_both(self, category, new_name):
+        '''
+        Moves image pairs into a common folder
+        '''
         dest_dir = os.path.join(self.image_files, category)  # Parent directory where 'normal' would be
         if not os.path.exists(dest_dir):
             os.makedirs(dest_dir)  # Ensure the directory exists
