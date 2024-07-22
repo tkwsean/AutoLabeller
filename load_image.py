@@ -180,7 +180,7 @@ class LoadImage:
     def move_image_without_creating_folders(self, category, new_name):
         '''
         Moves correct images without creating folders
-        Deletes the wrong images
+        Transfers the wrong images to a folder called to_be_deleted
         Meant for imageblur, correct, wrong
         '''
         dest_dir = os.path.join(self.image_files, category)  # Parent directory where 'normal' would be
@@ -188,47 +188,82 @@ class LoadImage:
             os.makedirs(dest_dir)  # Ensure the directory exists
 
         normal_new_path = os.path.join(dest_dir, (new_name + '.jpg') if new_name else os.path.basename(self.current_image_path_1))
+
+        print(f"Moving normal image from {self.current_image_path_1} to {normal_new_path}")
         shutil.move(self.current_image_path_1, normal_new_path)
+
+        to_be_deleted_dir = os.path.join(self.image_files, 'to_be_deleted')
+        if not os.path.exists(to_be_deleted_dir):
+            os.makedirs(to_be_deleted_dir)
+
         if os.path.exists(self.current_image_path_2):  # Check if the debug image exists
-            os.remove(self.current_image_path_2)  # Delete the debug image  
+            debug_new_path = os.path.join(to_be_deleted_dir, os.path.basename(self.current_image_path_2))
+            print(f"Transferring debug image {self.current_image_path_2} to {debug_new_path}")
+            shutil.move(self.current_image_path_2, debug_new_path)  # Move the debug image to to_be_deleted folder
+        else:
+            print(f"Debug image not found: {self.current_image_path_2}")
+
         self.completed_count += 1
         self.load_next_image_pair()
+
         
     def undo_move_image_without_creating_folders(self, category, new_name):
         '''
         Undo the move operation by moving the image back to its original location
-        Restores the deleted debug image if it existed
-        Meant for imageblur, correct, wrong
+        Restores the debug image from to_be_deleted folder if it existed
         '''
         dest_dir = os.path.join(self.image_files, category)
         normal_new_path = os.path.join(dest_dir, (new_name + '.jpg') if new_name else os.path.basename(self.current_image_path_1))
         original_normal_path = os.path.join(self.image_files, os.path.basename(normal_new_path))
-    
-        # Move the image back to its original location
-        if os.path.exists(normal_new_path):
-            shutil.move(normal_new_path, original_normal_path)
-    
-        # Restore the deleted debug image if it existed
-        debug_new_path = os.path.join(self.image_files, category, os.path.basename(original_normal_path).replace('.jpg', '_debug.jpg'))
+
+        to_be_deleted_dir = os.path.join(self.image_files, 'to_be_deleted')
+        debug_new_path = os.path.join(to_be_deleted_dir, os.path.basename(original_normal_path).replace('.jpg', '_debug.jpg'))
         original_debug_path = os.path.join(self.image_files, os.path.basename(debug_new_path))
-    
-        if os.path.exists(original_debug_path):
-            shutil.move(debug_new_path, original_debug_path)
-    
-        self.completed_count -= 1
-        self.current_pair_index -= 1
-    
-        # Reload the previous image pair
-        if self.current_pair_index >= 0:
-            self.current_image_path_1, self.current_image_path_2 = self.image_pairs[self.current_pair_index]
-            self.load_next_image_pair()
-        else:
-            self.label.setText("No More Images to Undo")
-            self.current_pair_index = 0  # Reset to the first image pair
-    
-        self.update_counts()
+
+        try:
+            # Debug information
+            print(f"Undo move: category={category}, new_name={new_name}")
+            print(f"Normal image paths: {normal_new_path} -> {original_normal_path}")
+            print(f"Debug image paths: {debug_new_path} -> {original_debug_path}")
+
+            # Delete the old normal image if it exists in the new folder
+            if os.path.exists(normal_new_path):
+                print(f"Deleting old normal image path: {normal_new_path}")
+                os.remove(normal_new_path)
+
+            # Move normal image back
+            if os.path.exists(original_normal_path):
+                print(f"Normal image successfully moved back to {original_normal_path}")
+            else:
+                print(f"Failed to move normal image back to {original_normal_path}")
+
+            # Delete the old debug image if it exists in the new folder
+            if os.path.exists(debug_new_path):
+                print(f"Deleting old debug image path: {debug_new_path}")
+                os.remove(debug_new_path)
+
+            # Move debug image back
+            if os.path.exists(original_debug_path):
+                print(f"Debug image successfully moved back to {original_debug_path}")
+            else:
+                print(f"Failed to move debug image back to {original_debug_path}")
+
+            self.completed_count -= 1
+            self.current_pair_index -= 1
+
+            if self.current_pair_index >= 0:
+                self.current_image_path_1, self.current_image_path_2 = self.image_pairs[self.current_pair_index]
+                self.load_next_image_pair()
+            else:
+                self.label.setText("No More Images to Undo")
+                self.current_pair_index = 0  # Reset to the first image pair
+
+            self.update_counts()
+        except Exception as e:
+            print(f"Error undoing move: {e}")
 
 
+    
     def move_image_without_creating_folders_both(self, category, new_name):
         '''
         Moves image pairs into a common folder
@@ -242,14 +277,20 @@ class LoadImage:
         normal_new_path_1 = os.path.join(dest_dir, (new_name + '.jpg') if new_name else os.path.basename(self.current_image_path_1))
         normal_new_path_2 = os.path.join(dest_dir, (new_name + '_debug.jpg') if new_name else os.path.basename(self.current_image_path_2))
 
-        # Move both images
-        shutil.move(self.current_image_path_1, normal_new_path_1)
-        if os.path.exists(self.current_image_path_2):  # Check if the debug image exists
-            shutil.move(self.current_image_path_2, normal_new_path_2)
+        try:
+            # Move both images
+            shutil.move(self.current_image_path_1, normal_new_path_1)
+            if os.path.exists(self.current_image_path_2):  # Check if the debug image exists
+                shutil.move(self.current_image_path_2, normal_new_path_2)
+            else:
+                print(f"Debug image not found: {self.current_image_path_2}")
         
-        self.completed_count += 1
-        self.load_next_image_pair()
-        
+            self.completed_count += 1
+            self.load_next_image_pair()
+        except Exception as e:
+            print(f"Error moving images: {e}")
+
+
     def undo_move_image_without_creating_folders_both(self, category, new_name):
         '''
         Undo the move operation by moving the image pairs back to their original location
@@ -265,24 +306,48 @@ class LoadImage:
         original_normal_path_1 = os.path.join(self.image_files, os.path.basename(normal_new_path_1))
         original_debug_path_2 = os.path.join(self.image_files, os.path.basename(normal_new_path_2))
     
-        # Move the images back to their original locations
-        if os.path.exists(normal_new_path_1):
-            shutil.move(normal_new_path_1, original_normal_path_1)
-        if os.path.exists(normal_new_path_2):
-            shutil.move(normal_new_path_2, original_debug_path_2)
-    
-        self.completed_count -= 1
-        self.current_pair_index -= 1
-    
-        # Reload the previous image pair
-        if self.current_pair_index >= 0:
-            self.current_image_path_1, self.current_image_path_2 = self.image_pairs[self.current_pair_index]
-            self.load_next_image_pair()
-        else:
-            self.label.setText("No More Images to Undo")
-            self.current_pair_index = 0  # Reset to the first image pair
-    
-        self.update_counts()
+        try:
+            # Debug information
+            print(f"Undo move: category={category}, new_name={new_name}")
+            print(f"Normal image paths: {normal_new_path_1} -> {original_normal_path_1}")
+            print(f"Debug image paths: {normal_new_path_2} -> {original_debug_path_2}")
+
+            # Delete the old normal image if it exists in the new folder
+            if os.path.exists(normal_new_path_1):
+                print(f"Deleting old normal image path: {normal_new_path_1}")
+                os.remove(normal_new_path_1)
+
+            # Move normal image back
+            if os.path.exists(original_normal_path_1):
+                print(f"Normal image successfully moved back to {original_normal_path_1}")
+            else:
+                print(f"Failed to move normal image back to {original_normal_path_1}")
+
+            # Delete the old debug image if it exists in the new folder
+            if os.path.exists(normal_new_path_2):
+                print(f"Deleting old debug image path: {normal_new_path_2}")
+                os.remove(normal_new_path_2)
+
+            # Move debug image back
+            if os.path.exists(original_debug_path_2):
+                print(f"Debug image successfully moved back to {original_debug_path_2}")
+            else:
+                print(f"Failed to move debug image back to {original_debug_path_2}")
+
+            self.completed_count -= 1
+            self.current_pair_index -= 1
+
+            if self.current_pair_index >= 0:
+                self.current_image_path_1, self.current_image_path_2 = self.image_pairs[self.current_pair_index]
+                self.load_next_image_pair()
+            else:
+                self.label.setText("No More Images to Undo")
+                self.current_pair_index = 0  # Reset to the first image pair
+
+            self.update_counts()
+        except Exception as e:
+            print(f"Error undoing move: {e}")
+
 
 
     def update_counts(self):
