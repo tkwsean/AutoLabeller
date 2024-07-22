@@ -150,6 +150,7 @@ class LoadUI:
     def handle_undo(self):
         if self.prev_button_pressed:
             last_action = self.prev_button_pressed.pop()
+            self.parent.loader.undo_load_next_image_pair
             print(last_action)
             if last_action == 'keypointerror':
                 self.parent.loader.undo_move_image_without_creating_folders_both('keypointerror', None)
