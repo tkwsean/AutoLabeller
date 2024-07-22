@@ -152,15 +152,15 @@ class LoadUI:
             last_action = self.prev_button_pressed.pop()
             print(last_action)
             if last_action == 'keypointerror':
-                return None
+                self.parent.loader.undo_move_image_without_creating_folders_both('keypointerror', None)
             elif last_action == 'correct/single':
-                return None
+                self.parent.loader.undo_move_image_without_creating_folders('correct/single', None)
             elif last_action == 'correct/double':
-                return None
+                self.parent.loader.undo_move_image_without_creating_folders('correct/double', None)
             elif last_action == 'imageblur':
-                return None
+                self.parent.loader.undo_move_image_without_creating_folders('imageblur', None)
             elif last_action == 'wrong/single':
-                return None
+                self.parent.loader.undo_move_image_without_creating_folders('wrong/single', None)
             elif last_action == 'wrong/double':
-                return None
+                self.parent.loader.undo_move_image_without_creating_folders('wrong/double', None)
 
