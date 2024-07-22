@@ -20,6 +20,8 @@ class LoadImage:
         self.completed_count = 0
         self.create_combined_image = None
         self.prev_combined_image = None
+        self.previous_states = []
+        self.remaining_count = len(self.image_pairs) - self.current_pair_index
 
     def find_image_pairs(self):
         files = os.listdir(self.image_files)
@@ -165,6 +167,7 @@ class LoadImage:
                 shutil.move(debug_new_path, original_debug_path)
         
             self.completed_count -= 1
+            self.remaining_count += 1
             self.current_pair_index -= 1
         
             # Reload the previous image pair
@@ -249,6 +252,7 @@ class LoadImage:
                 print(f"Failed to move debug image back to {original_debug_path}")
 
             self.completed_count -= 1
+            self.remaining_count += 1
             self.current_pair_index -= 1
 
             if self.current_pair_index >= 0:
@@ -351,6 +355,5 @@ class LoadImage:
 
 
     def update_counts(self):
-        remaining_count = len(self.image_pairs) - self.current_pair_index
-        self.remaining_label.setText(f'Remaining: {remaining_count}')
+        self.remaining_label.setText(f'Remaining: {self.remaining_count}')
         self.completed_label.setText(f'Completed: {self.completed_count}')
