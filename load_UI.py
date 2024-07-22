@@ -151,19 +151,23 @@ class LoadUI:
         if self.prev_button_pressed:
             last_action = self.prev_button_pressed.pop()
             print(last_action)
-        
+
             if last_action == 'keypointerror':
                 self.parent.loader.undo_move_image_without_creating_folders_both('keypointerror', None)
+                self.parent.loader.undo_load_next_image_pair()  # Correctly call the undo method to load the previous image
             elif last_action == 'correct/single':
                 self.parent.loader.undo_move_image_without_creating_folders('correct/single', None)
+                self.parent.loader.undo_load_next_image_pair()  # Correctly call the undo method to load the previous image
             elif last_action == 'correct/double':
                 self.parent.loader.undo_move_image_without_creating_folders('correct/double', None)
+                self.parent.loader.undo_load_next_image_pair()  # Correctly call the undo method to load the previous image
             elif last_action == 'imageblur':
                 self.parent.loader.undo_move_image_without_creating_folders('imageblur', None)
+                self.parent.loader.undo_load_next_image_pair()  # Correctly call the undo method to load the previous image
             elif last_action == 'wrong/single':
                 self.parent.loader.undo_move_image_without_creating_folders('wrong/single', None)
+                self.parent.loader.undo_load_next_image_pair()  # Correctly call the undo method to load the previous image
             elif last_action == 'wrong/double':
                 self.parent.loader.undo_move_image_without_creating_folders('wrong/double', None)
-        
-            self.parent.loader.undo_load_next_image_pair()  # Correctly call the undo method to load the previous image
+                self.parent.loader.undo_load_next_image_pair()  # Correctly call the undo method to load the previous image
 

@@ -5,6 +5,9 @@ import numpy as np
 from PyQt5.QtGui import QImage, QPixmap
 
 class LoadImage:
+
+    previous_states = []
+    
     def __init__(self, image_files, image_label, label, remaining_label, completed_label):
         self.image_files = image_files
         self.image_label = image_label
@@ -12,15 +15,17 @@ class LoadImage:
         self.remaining_label = remaining_label
         self.completed_label = completed_label
         self.magnifier = None
-        
         self.image_pairs = self.find_image_pairs()
         self.current_pair_index = 0
+        self.prev_current_pair_index = 0
         self.current_image_path_1 = None
+        self.prev_current_image_path_1 = None
         self.current_image_path_2 = None
+        self.prev_current_image_path_2 = None
         self.completed_count = 0
         self.create_combined_image = None
         self.prev_combined_image = None
-        self.previous_states = []
+        self.prev_pair_index = None
         self.remaining_count = len(self.image_pairs) - self.current_pair_index
 
     def find_image_pairs(self):
@@ -32,70 +37,35 @@ class LoadImage:
 
     def load_next_image_pair(self):
         if self.current_pair_index < len(self.image_pairs):
+            # Save current state for undo before loading the next image
+            if (self.current_image_path_1 and self.prev_current_image_path_1 != self.current_image_path_1) and (self.current_image_path_2 and self.current_image_path_2 != self.prev_current_image_path_2) is not None and self.create_combined_image.any():
+                self.previous_states.append((self.current_pair_index, self.current_image_path_1, self.current_image_path_2, self.create_combined_image)) 
+                print(f"State saved for undo: {self.previous_states[-1]}")
+
             self.current_image_path_1, self.current_image_path_2 = self.image_pairs[self.current_pair_index]
             print(f"Loading images: {self.current_image_path_1}, {self.current_image_path_2}")
-        
-            # Load first image
-            image_1 = cv2.imread(self.current_image_path_1)
-            if image_1 is not None:
-                image_1 = cv2.cvtColor(image_1, cv2.COLOR_BGR2RGB)
-                print(f"Loaded first image with shape: {image_1.shape}")
-            else:
-                print(f"Failed to load image: {self.current_image_path_1}")
-                image_1 = np.zeros((100, 100, 3), dtype=np.uint8)  # Placeholder for missing image
-            
-            # Load second image
-            image_2 = cv2.imread(self.current_image_path_2)
-            if image_2 is not None:
-                image_2 = cv2.cvtColor(image_2, cv2.COLOR_BGR2RGB)
-                print(f"Loaded second image with shape: {image_2.shape}")
-            else:
-                print(f"Failed to load image: {self.current_image_path_2}")
-                image_2 = np.zeros((100, 100, 3), dtype=np.uint8)  # Placeholder for missing image
-            
-            # Resize images to the same height
-            height = max(image_1.shape[0], image_2.shape[0])
-            image_1 = cv2.resize(image_1, (int(image_1.shape[1] * height / image_1.shape[0]), height))
-            image_2 = cv2.resize(image_2, (int(image_2.shape[1] * height / image_2.shape[0]), height))
-            
-            # Combine images side by side
-            combined_image = np.hstack((image_2, image_1))
 
-            # Resize combined image to fit within 1920x1080 while maintaining aspect ratio
-            max_height = 1080
-            max_width = 1900
-            h, w, _ = combined_image.shape
-            if h > max_height or w > max_width:
-                scaling_factor = min(max_width / w, max_height / h)
-                new_size = (int(w * scaling_factor), int(h * scaling_factor))
-                combined_image = cv2.resize(combined_image, new_size)
+            # Load and combine images
+            combined_image = self.load_and_combine_images(self.current_image_path_1, self.current_image_path_2)
+            if combined_image is not None:
+                self.create_combined_image = combined_image.copy()  # Ensure it's copied to avoid reference issues
 
-            # Combine current image with previous combined image, if it exists
-            # if self.prev_combined_image is not None:
-            #     # Resize current combined image to match the previous combined image width
-            #     prev_h, prev_w, _ = self.prev_combined_image.shape
-            #     if prev_w != combined_image.shape[1]:
-            #         combined_image = cv2.resize(combined_image, (prev_w, combined_image.shape[0]))
-            #     combined_image = np.vstack((combined_image, self.prev_combined_image))
+                height, width, channel = combined_image.shape
+                bytesPerLine = 3 * width
+                qImg = QImage(combined_image.data, width, height, bytesPerLine, QImage.Format_RGB888)
 
-            self.create_combined_image = combined_image.copy()  # Ensure it's copied to avoid reference issues
+                self.image_label.setPixmap(QPixmap.fromImage(qImg))
 
-            height, width, channel = combined_image.shape
-            bytesPerLine = 3 * width
-            qImg = QImage(combined_image.data, width, height, bytesPerLine, QImage.Format_RGB888)
-            
-            self.image_label.setPixmap(QPixmap.fromImage(qImg))
-        
-            # Update label to show current image name
-            self.label.setText(os.path.basename(self.current_image_path_1))
-            
-            # Store the current combined image as the previous one for the next iteration
-            self.prev_combined_image = self.create_combined_image
+                # Update label to show current image name
+                self.label.setText(os.path.basename(self.current_image_path_1))
 
-            self.current_pair_index += 1
-            if self.magnifier:
-                self.magnifier.update_image_display()
-            self.update_counts()
+                # Store the current combined image as the previous one for the next iteration
+                self.prev_combined_image = self.create_combined_image
+
+                self.current_pair_index += 1
+                if self.magnifier:
+                    self.magnifier.update_image_display()
+                self.update_counts()
         else:
             self.label.setText("No More Images")
 
@@ -103,23 +73,81 @@ class LoadImage:
         '''
         Undo the loading of the next image pair by reverting to the previous state
         '''
-        if self.previous_states:
+        if len(self.previous_states) != 0:
             # Revert to the previous state
-            self.current_pair_index, self.current_image_path_1, self.current_image_path_2, self.prev_combined_image = self.previous_states.pop()
-        
-            # Load the previous combined image
-            if self.prev_combined_image is not None:
-                height, width, channel = self.prev_combined_image.shape
-                bytesPerLine = 3 * width
-                qImg = QImage(self.prev_combined_image.data, width, height, bytesPerLine, QImage.Format_RGB888)
-                self.image_label.setPixmap(QPixmap.fromImage(qImg))
-                self.label.setText(os.path.basename(self.current_image_path_1))
-        
-            # Update the counts
-            self.update_counts()
-        else:
-            self.label.setText("No Previous Image to Undo")
+            state = self.pop_second_topmost() #Currently, it pops out that latest image pair??!!
+            if state:
+                self.prev_pair_index, self.prev_current_image_path_1, self.prev_current_image_path_2, self.prev_create_combined_image = state
 
+                # Debugging statements to ensure state is correctly restored
+                print(f"Reverting to previous state: pair_index={self.prev_pair_index}, image_path_1={self.prev_current_image_path_1}, image_path_2={self.prev_current_image_path_2}")
+
+                # Update current state with the previous state
+                self.current_pair_index -= 1
+                self.current_image_path_1 = self.prev_current_image_path_1
+                self.current_image_path_2 = self.prev_current_image_path_2
+                self.create_combined_image = self.prev_create_combined_image
+
+                # Explicitly load the previous image pair
+                combined_image = self.prev_create_combined_image
+                if combined_image is not None:
+                    height, width, channel = combined_image.shape
+                    bytesPerLine = 3 * width
+                    qImg = QImage(combined_image.data, width, height, bytesPerLine, QImage.Format_RGB888)
+                    self.image_label.setPixmap(QPixmap.fromImage(qImg))
+
+                    # Update label to show current image name
+                    self.label.setText(os.path.basename(self.prev_current_image_path_1))
+
+                    if self.magnifier:
+                        self.magnifier.update_image_display()
+
+                    # Debugging statement to ensure image is displayed
+                    print(f"Image reverted and displayed for: {self.prev_current_image_path_1}") #STILL POINTING TO LATEST IMAGE
+
+                # Update the counts
+                self.update_counts()
+            else:
+                self.label.setText("No Previous Image to Undo")
+
+
+    def load_and_combine_images(self, path1, path2):
+        # Load first image
+        image_1 = cv2.imread(path1)
+        if image_1 is not None:
+            image_1 = cv2.cvtColor(image_1, cv2.COLOR_BGR2RGB)
+            print(f"Loaded first image with shape: {image_1.shape}")
+        else:
+            print(f"Failed to load image: {path1}")
+            image_1 = np.zeros((100, 100, 3), dtype=np.uint8)  # Placeholder for missing image
+
+        # Load second image
+        image_2 = cv2.imread(path2)
+        if image_2 is not None:
+            image_2 = cv2.cvtColor(image_2, cv2.COLOR_BGR2RGB)
+            print(f"Loaded second image with shape: {image_2.shape}")
+        else:
+            print(f"Failed to load image: {path2}")
+            image_2 = np.zeros((100, 100, 3), dtype=np.uint8)  # Placeholder for missing image
+
+        # Resize images to the same height
+        height = max(image_1.shape[0], image_2.shape[0])
+        image_1 = cv2.resize(image_1, (int(image_1.shape[1] * height / image_1.shape[0]), height))
+        image_2 = cv2.resize(image_2, (int(image_2.shape[1] * height / image_2.shape[0]), height))
+
+        # Combine images side by side
+        combined_image = np.hstack((image_2, image_1))
+
+        # Resize combined image to fit within 1920x1080 while maintaining aspect ratio
+        max_height = 1080
+        max_width = 1900
+        h, w, _ = combined_image.shape
+        if h > max_height or w > max_width:
+            scaling_factor = min(max_width / w, max_height / h)
+            new_size = (int(w * scaling_factor), int(h * scaling_factor))
+            combined_image = cv2.resize(combined_image, new_size)
+
+        return combined_image
 
     def move_image(self, category, new_name):
         '''
@@ -266,7 +294,6 @@ class LoadImage:
         except Exception as e:
             print(f"Error undoing move: {e}")
 
-
     
     def move_image_without_creating_folders_both(self, category, new_name):
         '''
@@ -352,8 +379,23 @@ class LoadImage:
         except Exception as e:
             print(f"Error undoing move: {e}")
 
-
-
     def update_counts(self):
         self.remaining_label.setText(f'Remaining: {self.remaining_count}')
         self.completed_label.setText(f'Completed: {self.completed_count}')
+    
+    def pop_second_topmost(self):
+        if len(self.previous_states) > 1:
+            # Temporarily remove the topmost element
+            topmost = self.previous_states.pop()
+        
+            # Pop the second topmost element
+            second_topmost = self.previous_states.pop()
+        
+            # Restore the topmost element
+            self.previous_states.append(topmost)
+        
+            return second_topmost
+        else:
+            # If there is no second topmost element, return None
+            return None
+
