@@ -38,9 +38,9 @@ class LoadImage:
     def load_next_image_pair(self):
         if self.current_pair_index < len(self.image_pairs):
             # Save current state for undo before loading the next image
-            if (self.current_image_path_1 and self.prev_current_image_path_1 != self.current_image_path_1) and (self.current_image_path_2 and self.current_image_path_2 != self.prev_current_image_path_2) is not None and self.create_combined_image.any():
-                self.previous_states.append((self.current_pair_index, self.current_image_path_1, self.current_image_path_2, self.create_combined_image)) 
-                print(f"State saved for undo: {self.previous_states[-1]}")
+            # if (self.current_image_path_1 and self.prev_current_image_path_1 != self.current_image_path_1) and (self.current_image_path_2 and self.current_image_path_2 != self.prev_current_image_path_2) is not None and self.create_combined_image.any():
+            #     self.previous_states.append((self.current_pair_index, self.current_image_path_1, self.current_image_path_2, self.create_combined_image)) 
+            #     print(f"State saved for undo: {self.previous_states[-1]}")
 
             self.current_image_path_1, self.current_image_path_2 = self.image_pairs[self.current_pair_index]
             print(f"Loading images: {self.current_image_path_1}, {self.current_image_path_2}")
@@ -116,7 +116,7 @@ class LoadImage:
         image_1 = cv2.imread(path1)
         if image_1 is not None:
             image_1 = cv2.cvtColor(image_1, cv2.COLOR_BGR2RGB)
-            print(f"Loaded first image with shape: {image_1.shape}")
+            # print(f"Loaded first image with shape: {image_1.shape}")
         else:
             print(f"Failed to load image: {path1}")
             image_1 = np.zeros((100, 100, 3), dtype=np.uint8)  # Placeholder for missing image
@@ -125,7 +125,7 @@ class LoadImage:
         image_2 = cv2.imread(path2)
         if image_2 is not None:
             image_2 = cv2.cvtColor(image_2, cv2.COLOR_BGR2RGB)
-            print(f"Loaded second image with shape: {image_2.shape}")
+            # print(f"Loaded second image with shape: {image_2.shape}")
         else:
             print(f"Failed to load image: {path2}")
             image_2 = np.zeros((100, 100, 3), dtype=np.uint8)  # Placeholder for missing image
@@ -238,6 +238,62 @@ class LoadImage:
         self.load_next_image_pair()
 
         
+    # def undo_move_image_without_creating_folders(self, category, new_name):
+    #     '''
+    #     Undo the move operation by moving the image back to its original location
+    #     Restores the debug image from to_be_deleted folder if it existed
+    #     '''
+    #     dest_dir = os.path.join(self.image_files, category)
+    #     normal_new_path = os.path.join(dest_dir, (new_name + '.jpg') if new_name else os.path.basename(self.current_image_path_1))
+    #     original_normal_path = os.path.join(self.image_files, os.path.basename(normal_new_path))
+
+    #     to_be_deleted_dir = os.path.join(self.image_files, 'to_be_deleted')
+    #     debug_new_path = os.path.join(to_be_deleted_dir, os.path.basename(original_normal_path).replace('.jpg', '_debug.jpg'))
+    #     original_debug_path = os.path.join(self.image_files, os.path.basename(debug_new_path))
+
+    #     try:
+    #         # Debug information
+    #         print(f"Undo move: category={category}, new_name={new_name}")
+    #         print(f"Normal image paths: {normal_new_path} -> {original_normal_path}")
+    #         print(f"Debug image paths: {debug_new_path} -> {original_debug_path}")
+
+    #         # Delete the old normal image if it exists in the new folder
+    #         if os.path.exists(normal_new_path):
+    #             print(f"Deleting old normal image path: {normal_new_path}")
+    #             os.remove(normal_new_path)
+
+    #         # Move normal image back
+    #         if os.path.exists(original_normal_path):
+    #             print(f"Normal image successfully moved back to {original_normal_path}")
+    #         else:
+    #             print(f"Failed to move normal image back to {original_normal_path}")
+
+    #         # Delete the old debug image if it exists in the new folder
+    #         if os.path.exists(debug_new_path):
+    #             print(f"Deleting old debug image path: {debug_new_path}")
+    #             os.remove(debug_new_path)
+
+    #         # Move debug image back
+    #         if os.path.exists(original_debug_path):
+    #             print(f"Debug image successfully moved back to {original_debug_path}")
+    #         else:
+    #             print(f"Failed to move debug image back to {original_debug_path}")
+
+    #         self.completed_count -= 1
+    #         self.remaining_count += 1
+    #         self.current_pair_index -= 1
+
+    #         if self.current_pair_index >= 0:
+    #             self.current_image_path_1, self.current_image_path_2 = self.image_pairs[self.current_pair_index]
+    #             self.load_next_image_pair()
+    #         else:
+    #             self.label.setText("No More Images to Undo")
+    #             self.current_pair_index = 0  # Reset to the first image pair
+
+    #         self.update_counts()
+    #     except Exception as e:
+    #         print(f"Error undoing move: {e}")
+    
     def undo_move_image_without_creating_folders(self, category, new_name):
         '''
         Undo the move operation by moving the image back to its original location
@@ -253,11 +309,12 @@ class LoadImage:
 
         try:
             # Debug information
-            print(f"Undo move: category={category}, new_name={new_name}")
+            # print(f"Undo move: category={category}, new_name={new_name}")
             print(f"Normal image paths: {normal_new_path} -> {original_normal_path}")
             print(f"Debug image paths: {debug_new_path} -> {original_debug_path}")
 
             # Delete the old normal image if it exists in the new folder
+            print('Is this the delete path???!!!', normal_new_path)
             if os.path.exists(normal_new_path):
                 print(f"Deleting old normal image path: {normal_new_path}")
                 os.remove(normal_new_path)
