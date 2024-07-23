@@ -65,8 +65,8 @@ class LoadUI:
         self.incorrect_keypoint_error_button.clicked.connect(self.handle_keypoint_error)  # Update the connection
         self.button_frame.addWidget(self.incorrect_keypoint_error_button)
         
-        self.undo_button = QPushButton('Undo', self.parent)
-        self.undo_button.clicked.connect(self.handle_undo)
+        self.undo_button = QPushButton('Delete Previous', self.parent)
+        self.undo_button.clicked.connect(self.handle_delete)
         self.button_frame.addWidget(self.undo_button)
 
         self.image_label = QLabel(self.parent)
@@ -147,7 +147,7 @@ class LoadUI:
         self.prev_button_pressed.append('wrong/double')
         self.parent.rename_and_move_image('wrong/double')
     
-    def handle_undo(self):
+    def handle_delete(self):
         if self.prev_button_pressed:
             last_action = self.prev_button_pressed.pop()
             print(last_action)
