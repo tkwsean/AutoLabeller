@@ -82,9 +82,9 @@ class LoadUI:
         self.incorrect_keypoint_error_button.clicked.connect(self.handle_keypoint_error)  # Update the connection
         self.button_frame.addWidget(self.incorrect_keypoint_error_button)
         
-        self.undo_button = QPushButton('Delete Previous', self.parent)
-        self.undo_button.clicked.connect(self.handle_delete)
-        self.button_frame.addWidget(self.undo_button)
+        # self.undo_button = QPushButton('Delete Previous', self.parent)
+        # self.undo_button.clicked.connect(self.handle_delete)
+        # self.button_frame.addWidget(self.undo_button)
 
         self.image_label = QLabel(self.parent)
         self.image_label.setAlignment(Qt.AlignCenter)
@@ -168,20 +168,20 @@ class LoadUI:
         self.prev_button_pressed.append('wrong/double')
         self.parent.rename_and_move_image('wrong/double')
     
-    def handle_delete(self):
-        if self.prev_button_pressed:
-            last_action = self.prev_button_pressed.pop()
-            print(last_action)
-            if last_action == 'keypointerror':
-                return None
-            elif last_action == 'correct/single':
-                return None
-            elif last_action == 'correct/double':
-                return None
-            elif last_action == 'imageblur':
-                return None
-            elif last_action == 'wrong/single':
-                return None
-            elif last_action == 'wrong/double':
-                return None
+    # def handle_delete(self):
+    #     if self.prev_button_pressed:
+    #         last_action = self.prev_button_pressed.pop()
+    #         print(last_action)
+    #         if last_action == 'keypointerror':
+    #             return None
+    #         elif last_action == 'correct/single':
+    #             return None
+    #         elif last_action == 'correct/double':
+    #             return None
+    #         elif last_action == 'imageblur':
+    #             return None
+    #         elif last_action == 'wrong/single':
+    #             return None
+    #         elif last_action == 'wrong/double':
+    #             return None
 

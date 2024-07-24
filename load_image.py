@@ -66,8 +66,8 @@ class LoadImage:
             combined_image = np.hstack((image_2, image_1))
 
             # Resize combined image to fit within 1920x1080 while maintaining aspect ratio
-            max_height = 1080
-            max_width = 1900
+            max_height = 756
+            max_width = 1330
             h, w, _ = combined_image.shape
             if h > max_height or w > max_width:
                 scaling_factor = min(max_width / w, max_height / h)
