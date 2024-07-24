@@ -1,3 +1,4 @@
+import re
 import os
 import cv2
 import shutil
@@ -5,7 +6,10 @@ import numpy as np
 from PyQt5.QtGui import QImage, QPixmap
 
 class LoadImage:
-    def __init__(self, image_files, image_label, label, remaining_label, completed_label):
+    
+    universal_stack = []
+    
+    def __init__(self, image_files, image_label, label, remaining_label, completed_label, prev_lpid):
         self.image_files = image_files
         self.image_label = image_label
         self.label = label
@@ -20,7 +24,8 @@ class LoadImage:
         self.completed_count = 0
         self.create_combined_image = None
         self.prev_combined_image = None
-
+        self.prev_lpid = prev_lpid
+        
     def find_image_pairs(self):
         files = os.listdir(self.image_files)
         base_files = set(f.replace("_debug", "") for f in files if "_debug" not in f)
@@ -30,6 +35,9 @@ class LoadImage:
 
     def load_next_image_pair(self):
         if self.current_pair_index < len(self.image_pairs):
+            if(len(self.universal_stack) > 0):
+                self.prev_lpid.setText(self.universal_stack.pop(-1))
+                print('Previous file: ', self.prev_lpid)
             self.current_image_path_1, self.current_image_path_2 = self.image_pairs[self.current_pair_index]
             print(f"Loading images: {self.current_image_path_1}, {self.current_image_path_2}")
         
@@ -37,7 +45,6 @@ class LoadImage:
             image_1 = cv2.imread(self.current_image_path_1)
             if image_1 is not None:
                 image_1 = cv2.cvtColor(image_1, cv2.COLOR_BGR2RGB)
-                print(f"Loaded first image with shape: {image_1.shape}")
             else:
                 print(f"Failed to load image: {self.current_image_path_1}")
                 image_1 = np.zeros((100, 100, 3), dtype=np.uint8)  # Placeholder for missing image
@@ -46,7 +53,6 @@ class LoadImage:
             image_2 = cv2.imread(self.current_image_path_2)
             if image_2 is not None:
                 image_2 = cv2.cvtColor(image_2, cv2.COLOR_BGR2RGB)
-                print(f"Loaded second image with shape: {image_2.shape}")
             else:
                 print(f"Failed to load image: {self.current_image_path_2}")
                 image_2 = np.zeros((100, 100, 3), dtype=np.uint8)  # Placeholder for missing image
@@ -89,7 +95,8 @@ class LoadImage:
             
             # Store the current combined image as the previous one for the next iteration
             self.prev_combined_image = self.create_combined_image
-
+            lpid = self.extract_full_identifier(self.current_image_path_1)
+            self.universal_stack.append(lpid)
             self.current_pair_index += 1
             if self.magnifier:
                 self.magnifier.update_image_display()
@@ -159,3 +166,27 @@ class LoadImage:
         remaining_count = len(self.image_pairs) - self.current_pair_index
         self.remaining_label.setText(f'Remaining: {remaining_count}')
         self.completed_label.setText(f'Completed: {self.completed_count}')
+        
+    def extract_full_identifier(self, file_path):
+        # Define the pattern to match the full identifier, with optional _debug
+        pattern = r'(\d{4}_\d{2}_\d{2}_\d{2}_\d{2}_\d{2}_lpr[A-Z0-9]+)(_debug)?\.jpg'
+    
+        # Search for the pattern in the file path
+        match = re.search(pattern, file_path)
+    
+        if match:
+            # The first capturing group contains the identifier
+            return match.group(1)
+        else:
+            return None
+    
+    
+    def pop_second_topmost(self):
+        if len(self.universal_stack) < 2:
+            print("Not enough elements in the stack to pop the second topmost element.")
+            return None
+        else:
+            top_element = self.universal_stack.pop()  # Remove and store the top element
+            second_topmost_element = self.universal_stack.pop()  # Remove and store the second topmost element
+            self.universal_stack.append(top_element)  # Put back the top element
+            return second_topmost_element

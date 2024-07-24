@@ -1,7 +1,7 @@
 import os
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFileDialog, QDialog
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QKeySequence
+from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFileDialog, QDialog, QSizePolicy, QLineEdit, QMessageBox
+from PyQt5.QtCore import Qt, QUrl
+from PyQt5.QtGui import QKeySequence, QFont, QDesktopServices
 from PyQt5.QtWidgets import QShortcut
 from load_image import LoadImage
 from magnifyingglass import MagnifyingGlass
@@ -24,6 +24,19 @@ class LoadUI:
         self.completed_label = QLabel('Completed: 0', self.parent)
         self.completed_label.setAlignment(Qt.AlignCenter)
 
+        
+        self.prev_lpid = QLabel('Previous Annotation: ', self.parent)
+        self.completed_label.setAlignment(Qt.AlignCenter)
+        font = QFont()
+        font.setPointSize(14)  # Adjust the font size as needed
+        self.prev_lpid.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.prev_lpid.setWordWrap(True) 
+        # Adjust the size policy
+
+        # Optional: Adjust the minimum size if necessary
+        self.prev_lpid.setMinimumWidth(500)  # Adjust as needed
+        self.prev_lpid.setMinimumHeight(50)  # Adjust as needed
+        
         self.button_frame = QHBoxLayout()  # Use QHBoxLayout to stack buttons horizontally
 
         self.next_button = QPushButton('Load Image Pair', self.parent)
@@ -36,6 +49,10 @@ class LoadUI:
         correct_frame = QVBoxLayout()
         wrong_frame = QVBoxLayout()
         # correct_frame.addWidget(self.correct_button)
+        
+        self.search_button = QPushButton('Search File', self.parent)
+        self.search_button.clicked.connect(self.perform_search)
+        self.button_frame.addWidget(self.search_button)
         
         self.single_button = QPushButton('Correct Single', self.parent)  # Correctly define single_button here
         self.single_button.clicked.connect(self.handle_correct_single)
@@ -82,7 +99,7 @@ class LoadUI:
         self.parent.setLayout(layout)
 
         self.image_files = QFileDialog.getExistingDirectory(self.parent, "Select Folder with Images")
-        self.loader = LoadImage(self.image_files, self.image_label, self.label, self.remaining_label, self.completed_label)
+        self.loader = LoadImage(self.image_files, self.image_label, self.label, self.remaining_label, self.completed_label, self.prev_lpid)
         self.magnifier = MagnifyingGlass(self.loader)
         self.loader.magnifier = self.magnifier
 
@@ -121,6 +138,10 @@ class LoadUI:
             if new_name:
                 self.parent.loader.move_image_without_creating_folders(category, new_name)
 
+    def perform_search(self, dialog):
+        QDesktopServices.openUrl(QUrl.fromLocalFile("/home/student/Desktop/LPR_Annotation/lpr_alert_techplace1/media/peseyes/output/lpr_alert/"))
+
+    
     def handle_keypoint_error(self):
         # Directly move to the keypointerror folder without prompt
         self.prev_button_pressed.append('keypointerror')
