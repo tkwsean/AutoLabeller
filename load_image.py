@@ -75,12 +75,12 @@ class LoadImage:
                 combined_image = cv2.resize(combined_image, new_size)
 
             # Combine current image with previous combined image, if it exists
-            # if self.prev_combined_image is not None:
-            #     # Resize current combined image to match the previous combined image width
-            #     prev_h, prev_w, _ = self.prev_combined_image.shape
-            #     if prev_w != combined_image.shape[1]:
-            #         combined_image = cv2.resize(combined_image, (prev_w, combined_image.shape[0]))
-            #     combined_image = np.vstack((combined_image, self.prev_combined_image))
+            if self.prev_combined_image is not None:
+                # Resize current combined image to match the previous combined image width
+                prev_h, prev_w, _ = self.prev_combined_image.shape
+                if prev_w != combined_image.shape[1]:
+                    combined_image = cv2.resize(combined_image, (prev_w, combined_image.shape[0]))
+                combined_image = np.vstack((combined_image, self.prev_combined_image))
 
             self.create_combined_image = combined_image.copy()  # Ensure it's copied to avoid reference issues
 
